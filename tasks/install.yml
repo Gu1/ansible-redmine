@@ -1,0 +1,40 @@
+---
+
+- name: Config database
+  template: src=database.yml.j2 dest="{{ redmine_path }}/config/database.yml"
+  sudo: yes
+  sudo_user: "{{ redmine_user }}"
+
+- name: Install Bundler
+  shell: "gem install bundler"
+  args:
+    chdir: "{{ redmine_path }}"
+
+- name: Dependencies installation
+  shell: bundle install --path vendor/bundle --without development test
+  args:
+    chdir: "{{ redmine_path }}"
+  sudo: yes
+  sudo_user: "{{ redmine_user }}"
+
+- name: Session store secret generation
+  shell: bundle exec rake generate_secret_token
+  args:
+   chdir: "{{ redmine_path }}"
+  sudo: yes
+  sudo_user: "{{ redmine_user }}"
+
+- name: Database schema objects creation
+  shell: RAILS_ENV=production bundle exec rake db:migrate
+  args:
+   chdir: "{{ redmine_path }}"
+  sudo: yes
+  sudo_user: "{{ redmine_user }}"
+
+- name: Database default data set
+  shell: RAILS_ENV=production REDMINE_LANG="{{ redmine_lang }}" bundle exec rake redmine:load_default_data
+  args:
+   chdir: "{{ redmine_path }}"
+  sudo: yes
+  sudo_user: "{{ redmine_user }}"
+

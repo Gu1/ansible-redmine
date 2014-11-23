@@ -15,5 +15,5 @@ galaxy_info:
   categories:
   - development
 dependencies: 
-  - { role: ANXS.mysql }
-  
+  - { role: ANXS.postgresql }
+
